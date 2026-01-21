@@ -2,14 +2,14 @@
 #include "test_pattern.h"
 
 #define PIN_WS2812B  21  // GPIO ESP32-S3 pin that connects to WS2812B
-#define NUM_PIXELS  5  // The number of LEDs (pixels) on WS2812B
+#define NUM_PIXELS  256  // The number of LEDs (pixels) on WS2812B
 
 Adafruit_NeoPixel WS2812B(NUM_PIXELS, PIN_WS2812B, NEO_GRB + NEO_KHZ800);
 
 void setup() {
   // put your setup code here, to run once:
   WS2812B.begin(); // INITIALIZE WS2812B strip object (REQUIRED)
-  WS2812B.setBrightness(20); // a value from 0 to 255
+  WS2812B.setBrightness(30); // a value from 0 to 255
   Serial.begin(9600);
 }
 
@@ -23,9 +23,6 @@ void loop() {
     }
 
     WS2812B.show();
-    delay(1000);
+    delay(frame_time * 1000);
   }
-  //   Serial.println("Displayed frame");
-  //   delay(frame_time * 1000);
-  // }
 }

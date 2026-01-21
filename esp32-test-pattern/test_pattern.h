@@ -13,57 +13,51 @@ static uint32_t Color(uint8_t r, uint8_t g, uint8_t b) {
   return ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
 }
 
-// uint32_t colors[5] = {
-//     Color(255, 0, 0),    // Red
-//     Color(255, 106, 0),  // Orange
-//     Color(255, 216, 0),  // Yellow
-//     Color(0, 255, 33),   // Green
+//     Color(255, 0, 0)    // Red
+//     Color(255, 106, 0)  // Orange
+//     Color(255, 216, 0)  // Yellow
+//     Color(0, 255, 33)  // Green
 //     Color(255, 255, 255) // White
-// };
 
-uint32_t frame_1[5] = {Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0)};
-uint32_t frame_2[5] = {Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0)};
+uint32_t frames[2][256] = {
+    // Frame 1
+    {
+       /*0*/  Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0),
+       /*1*/  Color(255, 0, 0), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 0, 0),
+       /*2*/  Color(255, 0, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 255, 255), Color(255, 0, 0),
+       /*3*/  Color(255, 0, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 0, 0),
+       /*4*/  Color(255, 0, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 0, 0),
+       /*5*/  Color(255, 0, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 216, 0), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 216, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 0, 0),
+       /*6*/  Color(255, 0, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 216, 0), Color(255, 255, 255), Color(0, 255, 33), Color(0, 255, 33), Color(0, 255, 33), Color(0, 255, 33), Color(255, 255, 255), Color(255, 216, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 0, 0),
+       /*7*/  Color(255, 0, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 216, 0), Color(255, 255, 255), Color(0, 255, 33), Color(255, 255, 255), Color(255, 255, 255), Color(0, 255, 33), Color(255, 255, 255), Color(255, 216, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 0, 0),
+       /*8*/  Color(255, 0, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 216, 0), Color(255, 255, 255), Color(0, 255, 33), Color(255, 255, 255), Color(255, 255, 255), Color(0, 255, 33), Color(255, 255, 255), Color(255, 216, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 0, 0),
+       /*9*/  Color(255, 0, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 216, 0), Color(255, 255, 255), Color(0, 255, 33), Color(0, 255, 33), Color(0, 255, 33), Color(0, 255, 33), Color(255, 255, 255), Color(255, 216, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 0, 0),
+       /*10*/ Color(255, 0, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 216, 0), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 216, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 0, 0),
+       /*11*/ Color(255, 0, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 216, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 0, 0),
+       /*12*/ Color(255, 0, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 106, 0), Color(255, 255, 255), Color(255, 0, 0),
+       /*13*/ Color(255, 0, 0), Color(255, 255, 255), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 106, 0), Color(255, 255, 255), Color(255, 0, 0),
+       /*14*/ Color(255, 0, 0), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 255, 255), Color(255, 0, 0),
+       /*15*/ Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0), Color(255, 0, 0)
+    },
+    // Frame 2
+    {
+       /*0*/  Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*1*/  Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*2*/  Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*3*/  Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*4*/  Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*5*/  Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*6*/  Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*7*/  Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*8*/  Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*9*/  Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*10*/ Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*11*/ Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*12*/ Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*13*/ Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*14*/ Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+       /*15*/ Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0), Color(255, 106, 0), Color(255, 216, 0), Color(0, 255, 33), Color(255, 255, 255), Color(255, 0, 0),
+    },
+};
 
-uint32_t* frames[2] = {frame_1, frame_2};
-
-// uint32_t* frames[2][256] = {
-//     // Frame 1
-//     {
-//        /*0*/  &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0],
-//        /*1*/  &colors[0], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[0],
-//        /*2*/  &colors[0], &colors[4], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[4], &colors[0],
-//        /*3*/  &colors[0], &colors[4], &colors[1], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[1], &colors[4], &colors[0],
-//        /*4*/  &colors[0], &colors[4], &colors[1], &colors[4], &colors[2], &colors[2], &colors[2], &colors[2], &colors[2], &colors[2], &colors[2], &colors[2], &colors[4], &colors[1], &colors[4], &colors[0],
-//        /*5*/  &colors[0], &colors[4], &colors[1], &colors[4], &colors[2], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[2], &colors[4], &colors[1], &colors[4], &colors[0],
-//        /*6*/  &colors[0], &colors[4], &colors[1], &colors[4], &colors[2], &colors[4], &colors[3], &colors[3], &colors[3], &colors[3], &colors[4], &colors[2], &colors[4], &colors[1], &colors[4], &colors[0],
-//        /*7*/  &colors[0], &colors[4], &colors[1], &colors[4], &colors[2], &colors[4], &colors[3], &colors[4], &colors[4], &colors[3], &colors[4], &colors[2], &colors[4], &colors[1], &colors[4], &colors[0],
-//        /*8*/  &colors[0], &colors[4], &colors[1], &colors[4], &colors[2], &colors[4], &colors[3], &colors[4], &colors[4], &colors[3], &colors[4], &colors[2], &colors[4], &colors[1], &colors[4], &colors[0],
-//        /*9*/  &colors[0], &colors[4], &colors[1], &colors[4], &colors[2], &colors[4], &colors[3], &colors[3], &colors[3], &colors[3], &colors[4], &colors[2], &colors[4], &colors[1], &colors[4], &colors[0],
-//        /*10*/ &colors[0], &colors[4], &colors[1], &colors[4], &colors[2], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[2], &colors[4], &colors[1], &colors[4], &colors[0],
-//        /*11*/ &colors[0], &colors[4], &colors[1], &colors[4], &colors[2], &colors[2], &colors[2], &colors[2], &colors[2], &colors[2], &colors[2], &colors[2], &colors[4], &colors[1], &colors[4], &colors[0],
-//        /*12*/ &colors[0], &colors[4], &colors[1], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[1], &colors[4], &colors[0],
-//        /*13*/ &colors[0], &colors[4], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[1], &colors[4], &colors[0],
-//        /*14*/ &colors[0], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[4], &colors[0],
-//        /*15*/ &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0], &colors[0]
-//     },
-//     // Frame 2
-//     {
-//        /*0*/  &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*1*/  &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*2*/  &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*3*/  &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*4*/  &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*5*/  &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*6*/  &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*7*/  &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*8*/  &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*9*/  &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*10*/ &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*12*/ &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*13*/ &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*14*/ &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//        /*15*/ &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0], &colors[1], &colors[2], &colors[3], &colors[4], &colors[0],
-//     },
-// };
-
-// double frame_time = 1.0; // seconds per frame
+double frame_time = 0.5; // seconds per frame
