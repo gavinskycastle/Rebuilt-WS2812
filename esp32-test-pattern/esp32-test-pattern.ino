@@ -1,0 +1,29 @@
+#include <Adafruit_NeoPixel.h>
+#include "test_pattern.h"
+
+#define PIN_WS2812B  21  // GPIO ESP32-S3 pin that connects to WS2812B
+#define NUM_PIXELS  256  // The number of LEDs (pixels) on WS2812B
+
+Adafruit_NeoPixel WS2812B(NUM_PIXELS, PIN_WS2812B, NEO_GRB + NEO_KHZ800);
+
+void setup() {
+  // put your setup code here, to run once:
+  WS2812B.begin(); // INITIALIZE WS2812B strip object (REQUIRED)
+  WS2812B.setBrightness(20); // a value from 0 to 255
+  Serial.begin(9600);
+}
+
+void loop() {
+
+  for(uint32_t* (*frame) : frames) {
+    WS2812B.clear();
+
+    for (int pixel = 0; pixel < 256; pixel++) {
+      WS2812B.setPixelColor(pixel, *(frame[pixel]));
+    }
+
+    WS2812B.show();
+    Serial.println("Displayed frame");
+    delay(frame_time * 1000);
+  }
+}
