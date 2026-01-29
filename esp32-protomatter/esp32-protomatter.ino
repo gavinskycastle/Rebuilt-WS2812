@@ -1,34 +1,12 @@
-#if !( defined(ESP32) )
-  #error This code is designed for (ESP32S2/S3/C3 + LwIP W5500 or ENC28J60) to run on ESP32 platform! Please check your Tools->Board setting.
-#endif
-
 #include <Arduino.h>
-
-#define USING_W5500           false
-#define USING_W6100           true
-#define USING_ENC28J60        false
-
-#if !USING_W5500 && !USING_W6100 && !USING_ENC28J60
-  #undef USING_W5500
-  #define USING_W5500           true
-#endif
 
 #define ASYNC_UDP_ESP32_ETHERNET_DEBUG_PORT      Serial
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ASYNC_UDP_ESP32_ETHERNET_LOGLEVEL_      2
 
-#if USING_W5500
-  #define ESP32_Ethernet_onEvent            ESP32_W5500_onEvent
-  #define ESP32_Ethernet_waitForConnect     ESP32_W5500_waitForConnect
-#elif USING_W6100
-  #define ESP32_Ethernet_onEvent            ESP32_W6100_onEvent
-  #define ESP32_Ethernet_waitForConnect     ESP32_W6100_waitForConnect
-#else   // #if USING_W5500
-  #define ESP32_Ethernet_onEvent            ESP32_ENC_onEvent
-  #define ESP32_Ethernet_waitForConnect     ESP32_ENC_waitForConnect
-  #define ETH_SPI_HOST                      SPI_HOST
-#endif    // #if USING_W5500
+#define ESP32_Ethernet_onEvent            ESP32_W5500_onEvent
+#define ESP32_Ethernet_waitForConnect     ESP32_W5500_waitForConnect
 
 #include <AsyncUDP_ESP32_Ethernet.h>
 
@@ -77,27 +55,6 @@ IPAddress myDNS(8, 8, 8, 8);
 
 AsyncUDP udp;
 
-void parsePacket(AsyncUDPPacket packet)
-{
-  Serial.print("UDP Packet Type: ");
-  Serial.print(packet.isBroadcast() ? "Broadcast" : packet.isMulticast() ? "Multicast" : "Unicast");
-  Serial.print(", From: ");
-  Serial.print(packet.remoteIP());
-  Serial.print(":");
-  Serial.print(packet.remotePort());
-  Serial.print(", To: ");
-  Serial.print(packet.localIP());
-  Serial.print(":");
-  Serial.print(packet.localPort());
-  Serial.print(", Length: ");
-  Serial.print(packet.length());
-  Serial.print(", Data: ");
-  Serial.write(packet.data(), packet.length());
-  Serial.println();
-  //reply to the client
-  packet.printf("Got %u bytes of data", packet.length());
-}
-
 void initEthernet()
 {
   UDP_LOGWARN(F("Default SPI pinout:"));
@@ -132,7 +89,7 @@ void initEthernet()
 }
 
 void setupUDP() {
-   while (!Serial && (millis() < 5000));
+  while (!Serial && (millis() < 5000));
 
   delay(500);
 
@@ -141,13 +98,7 @@ void setupUDP() {
   Serial.print(F(" with "));
   Serial.println(SHIELD_TYPE);
 
-#if USING_W5500
   Serial.println(WEBSERVER_ESP32_W5500_VERSION);
-#elif USING_W6100
-  Serial.println(WEBSERVER_ESP32_W6100_VERSION);  
-#else
-  Serial.println(WEBSERVER_ESP32_ENC_VERSION);
-#endif
   
   Serial.println(ASYNC_UDP_ESP32_ETHERNET_VERSION);
 
@@ -179,17 +130,155 @@ void setupUDP() {
 
 #include <Adafruit_Protomatter.h>
 
-uint8_t rgbPins[]  = {7, 8, 9, 10, 11, 12};
-uint8_t addrPins[] = {17, 18, 19, 20, 21};
+// --- Matrix pins and size (32x32 panel) ---
+uint8_t rgbPins[]  = {7, 8, 9, 10, 11, 12}; // R1,G1,B1,R2,G2,B2
+uint8_t addrPins[] = {17, 18, 19, 20, 21};   // A0-A4 for 32 rows
 uint8_t clockPin   = 14;
 uint8_t latchPin   = 15;
 uint8_t oePin      = 16;
 
-Adafruit_Protomatter matrix(
-  64, 4, 1, rgbPins, 4, addrPins, clockPin, latchPin, oePin, false);
+// Configure for a single 32x32 panel. rgb count = 6 (R1,G1,B1,R2,G2,B2)
+Adafruit_Protomatter matrix(32, 32, 1, rgbPins, 6, addrPins, clockPin, latchPin, oePin, false);
+
+// Pattern state
+enum Pattern { P_OFF, P_SOLID, P_CHECKER, P_RAINBOW, P_TEXT };
+volatile Pattern currentPattern = P_OFF;
+volatile uint8_t solidR = 0, solidG = 0, solidB = 0;
+String textMessage = "";
+
+// Animation parameters
+unsigned long lastUpdate = 0;
+const uint16_t frameDelayMs = 40; // ~25 FPS
+uint16_t rainbowHue = 0;
+
+// Helpers
+uint16_t color565_from_rgb(uint8_t r, uint8_t g, uint8_t b) {
+  return matrix.color565(r, g, b);
+}
+
+// Convert HSV (0..255) to RGB (0..255)
+void hsvToRgb(uint8_t h, uint8_t s, uint8_t v, uint8_t &r, uint8_t &g, uint8_t &b) {
+  uint8_t region = h / 43;
+  uint8_t remainder = (h - (region * 43)) * 6;
+
+  uint8_t p = (v * (255 - s)) >> 8;
+  uint8_t q = (v * (255 - ((s * remainder) >> 8))) >> 8;
+  uint8_t t = (v * (255 - ((s * (255 - remainder)) >> 8))) >> 8;
+
+  switch(region) {
+    case 0: r = v; g = t; b = p; break;
+    case 1: r = q; g = v; b = p; break;
+    case 2: r = p; g = v; b = t; break;
+    case 3: r = p; g = q; b = v; break;
+    case 4: r = t; g = p; b = v; break;
+    default: r = v; g = p; b = q; break;
+  }
+}
+
+// Pattern renderers
+void drawOff() {
+  matrix.fillScreen(0);
+  matrix.show();
+}
+
+void drawSolid() {
+  uint16_t c = color565_from_rgb(solidR, solidG, solidB);
+  matrix.fillScreen(c);
+  matrix.show();
+}
+
+void drawChecker() {
+  matrix.fillScreen(0);
+  for(int y=0; y<matrix.height(); y++) {
+    for(int x=0; x<matrix.width(); x++) {
+      bool odd = ((x/4) + (y/4)) & 1; // 4x4 blocks
+      if(odd) matrix.drawPixel(x, y, matrix.color565(255, 255, 255));
+      else matrix.drawPixel(x, y, matrix.color565(0, 0, 0));
+    }
+  }
+  matrix.show();
+}
+
+void drawRainbow() {
+  // Shift hue over time across the panel
+  for(int y=0; y<matrix.height(); y++) {
+    for(int x=0; x<matrix.width(); x++) {
+      uint8_t h = (uint8_t)(rainbowHue + (x * 256 / matrix.width()) + (y * 8));
+      uint8_t r,g,b;
+      hsvToRgb(h, 255, 128, r, g, b);
+      matrix.drawPixel(x, y, matrix.color565(r,g,b));
+    }
+  }
+  rainbowHue++;
+  matrix.show();
+}
+
+void drawText() {
+  matrix.fillScreen(0);
+  matrix.setTextWrap(true);
+  matrix.setCursor(0, 0);
+  matrix.setTextColor(matrix.color565(255,255,255));
+  matrix.setTextSize(1);
+  matrix.println(textMessage);
+  matrix.show();
+}
+
+// Updated packet parser: set global pattern & parameters
+void parsePacket(AsyncUDPPacket packet)
+{
+  // print debug
+  Serial.print("UDP Packet From: ");
+  Serial.print(packet.remoteIP());
+  Serial.print(":");
+  Serial.print(packet.remotePort());
+  Serial.print(" Length:");
+  Serial.println(packet.length());
+
+  String msg = "";
+  if(packet.length() > 0) {
+    msg = String((const char*)packet.data());
+    msg.trim();
+  }
+
+  Serial.print("Message: '");
+  Serial.print(msg);
+  Serial.println("'");
+
+  // Simple command parsing (case-insensitive)
+  msg.toUpperCase();
+  if(msg == "OFF") {
+    currentPattern = P_OFF;
+  } else if(msg == "RAINBOW") {
+    currentPattern = P_RAINBOW;
+  } else if(msg == "CHECKER") {
+    currentPattern = P_CHECKER;
+  } else if(msg.startsWith("SOLID")) {
+    // SOLID R G B  (0-255 each)
+    int r=-1,g=-1,b=-1;
+    // parse numbers
+    sscanf(msg.c_str(), "SOLID %d %d %d", &r, &g, &b);
+    if(r>=0 && g>=0 && b>=0) {
+      solidR = (uint8_t)r; solidG = (uint8_t)g; solidB = (uint8_t)b;
+      currentPattern = P_SOLID;
+    }
+  } else if(msg.startsWith("TEXT:")) {
+    // Keep original case for text display
+    // find position of ':' then copy original packet data
+    const char *raw = (const char*)packet.data();
+    const char *colon = strchr(raw, ':');
+    if(colon) {
+      textMessage = String(colon + 1);
+      textMessage.trim();
+      currentPattern = P_TEXT;
+    }
+  }
+
+  // reply
+  packet.printf("ACK: %u bytes", packet.length());
+}
 
 void setupLEDs() {
-  // Initialize matrix...
+  // Initialize matrix
   ProtomatterStatus status = matrix.begin();
   Serial.print("Protomatter begin() status: ");
   Serial.println((int)status);
@@ -197,39 +286,36 @@ void setupLEDs() {
     for(;;);
   }
 
-  // Make four color bars (red, green, blue, white) with brightness ramp:
-  for(int x=0; x<matrix.width(); x++) {
-    uint8_t level = x * 256 / matrix.width(); // 0-255 brightness
-    matrix.drawPixel(x, matrix.height() - 4, matrix.color565(level, 0, 0));
-    matrix.drawPixel(x, matrix.height() - 3, matrix.color565(0, level, 0));
-    matrix.drawPixel(x, matrix.height() - 2, matrix.color565(0, 0, level));
-    matrix.drawPixel(x, matrix.height() - 1, matrix.color565(level, level, level));
-  }
-
-  // Simple shapes and text, showing GFX library calls:
-  matrix.drawCircle(12, 10, 9, matrix.color565(255, 0, 0));               // Red
-  matrix.drawRect(14, 6, 17, 17, matrix.color565(0, 255, 0));             // Green
-  matrix.drawTriangle(32, 9, 41, 27, 23, 27, matrix.color565(0, 0, 255)); // Blue
-  matrix.println("ADAFRUIT"); // Default text color is white
-
-  // AFTER DRAWING, A show() CALL IS REQUIRED TO UPDATE THE MATRIX!
-
-  matrix.show(); // Copy data to matrix buffers
+  // start with OFF
+  drawOff();
 }
 
 void setup() {
-  Serial.begin(9600);
-
+  Serial.begin(115200);
   setupUDP();
-
   setupLEDs();
 }
 
 void loop() {
-  Serial.print("Refresh FPS = ~");
-  Serial.println(matrix.getFrameCount());
-  delay(1000);
+  unsigned long now = millis();
+  if(now - lastUpdate < frameDelayMs) return;
+  lastUpdate = now;
 
-  //Send broadcast on port UDP_REMOTE_PORT = 1234
-  udp.broadcastTo("Anyone here?", UDP_REMOTE_PORT);
+  // Choose what to draw based on currentPattern
+  switch(currentPattern) {
+    case P_OFF: drawOff(); break;
+    case P_SOLID: drawSolid(); break;
+    case P_CHECKER: drawChecker(); break;
+    case P_RAINBOW: drawRainbow(); break;
+    case P_TEXT: drawText(); break;
+    default: drawOff(); break;
+  }
+
+  // Optionally debug frame count occasionally
+  static unsigned long lastFps = 0;
+  if(now - lastFps > 1000) {
+    Serial.print("Frame count: ");
+    Serial.println(matrix.getFrameCount());
+    lastFps = now;
+  }
 }
