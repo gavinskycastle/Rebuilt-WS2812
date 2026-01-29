@@ -141,87 +141,8 @@ uint8_t oePin      = 16;
 Adafruit_Protomatter matrix(32, 32, 1, rgbPins, 6, addrPins, clockPin, latchPin, oePin, false);
 
 // Pattern state
-enum Pattern { P_OFF, P_SOLID, P_CHECKER, P_RAINBOW, P_TEXT };
-volatile Pattern currentPattern = P_OFF;
-volatile uint8_t solidR = 0, solidG = 0, solidB = 0;
-String textMessage = "";
-
-// Animation parameters
-unsigned long lastUpdate = 0;
-const uint16_t frameDelayMs = 40; // ~25 FPS
-uint16_t rainbowHue = 0;
-
-// Helpers
-uint16_t color565_from_rgb(uint8_t r, uint8_t g, uint8_t b) {
-  return matrix.color565(r, g, b);
-}
-
-// Convert HSV (0..255) to RGB (0..255)
-void hsvToRgb(uint8_t h, uint8_t s, uint8_t v, uint8_t &r, uint8_t &g, uint8_t &b) {
-  uint8_t region = h / 43;
-  uint8_t remainder = (h - (region * 43)) * 6;
-
-  uint8_t p = (v * (255 - s)) >> 8;
-  uint8_t q = (v * (255 - ((s * remainder) >> 8))) >> 8;
-  uint8_t t = (v * (255 - ((s * (255 - remainder)) >> 8))) >> 8;
-
-  switch(region) {
-    case 0: r = v; g = t; b = p; break;
-    case 1: r = q; g = v; b = p; break;
-    case 2: r = p; g = v; b = t; break;
-    case 3: r = p; g = q; b = v; break;
-    case 4: r = t; g = p; b = v; break;
-    default: r = v; g = p; b = q; break;
-  }
-}
-
-// Pattern renderers
-void drawOff() {
-  matrix.fillScreen(0);
-  matrix.show();
-}
-
-void drawSolid() {
-  uint16_t c = color565_from_rgb(solidR, solidG, solidB);
-  matrix.fillScreen(c);
-  matrix.show();
-}
-
-void drawChecker() {
-  matrix.fillScreen(0);
-  for(int y=0; y<matrix.height(); y++) {
-    for(int x=0; x<matrix.width(); x++) {
-      bool odd = ((x/4) + (y/4)) & 1; // 4x4 blocks
-      if(odd) matrix.drawPixel(x, y, matrix.color565(255, 255, 255));
-      else matrix.drawPixel(x, y, matrix.color565(0, 0, 0));
-    }
-  }
-  matrix.show();
-}
-
-void drawRainbow() {
-  // Shift hue over time across the panel
-  for(int y=0; y<matrix.height(); y++) {
-    for(int x=0; x<matrix.width(); x++) {
-      uint8_t h = (uint8_t)(rainbowHue + (x * 256 / matrix.width()) + (y * 8));
-      uint8_t r,g,b;
-      hsvToRgb(h, 255, 128, r, g, b);
-      matrix.drawPixel(x, y, matrix.color565(r,g,b));
-    }
-  }
-  rainbowHue++;
-  matrix.show();
-}
-
-void drawText() {
-  matrix.fillScreen(0);
-  matrix.setTextWrap(true);
-  matrix.setCursor(0, 0);
-  matrix.setTextColor(matrix.color565(255,255,255));
-  matrix.setTextSize(1);
-  matrix.println(textMessage);
-  matrix.show();
-}
+enum Pattern { P_DISABLED, P_IDLE, P_DRIVING, P_INTAKING, P_SHOOTING, P_CLIMBING };
+volatile Pattern currentPattern = P_DISABLED;
 
 // Updated packet parser: set global pattern & parameters
 void parsePacket(AsyncUDPPacket packet)
@@ -245,36 +166,47 @@ void parsePacket(AsyncUDPPacket packet)
   Serial.println("'");
 
   // Simple command parsing (case-insensitive)
-  msg.toUpperCase();
-  if(msg == "OFF") {
-    currentPattern = P_OFF;
-  } else if(msg == "RAINBOW") {
-    currentPattern = P_RAINBOW;
-  } else if(msg == "CHECKER") {
-    currentPattern = P_CHECKER;
-  } else if(msg.startsWith("SOLID")) {
-    // SOLID R G B  (0-255 each)
-    int r=-1,g=-1,b=-1;
-    // parse numbers
-    sscanf(msg.c_str(), "SOLID %d %d %d", &r, &g, &b);
-    if(r>=0 && g>=0 && b>=0) {
-      solidR = (uint8_t)r; solidG = (uint8_t)g; solidB = (uint8_t)b;
-      currentPattern = P_SOLID;
-    }
-  } else if(msg.startsWith("TEXT:")) {
-    // Keep original case for text display
-    // find position of ':' then copy original packet data
-    const char *raw = (const char*)packet.data();
-    const char *colon = strchr(raw, ':');
-    if(colon) {
-      textMessage = String(colon + 1);
-      textMessage.trim();
-      currentPattern = P_TEXT;
-    }
+  msg.toLowerCase();
+  if(msg == "disabled") {
+    currentPattern = P_DISABLED;
+  } else if(msg == "idle") {
+    currentPattern = P_IDLE;
+  } else if(msg == "driving") {
+    currentPattern = P_DRIVING;
+  } else if(msg == "intaking") {
+    currentPattern = P_INTAKING;
+  } else if(msg == "shooting") {
+    currentPattern = P_SHOOTING;
+  } else if(msg == "climbing") {
+    currentPattern = P_CLIMBING;
   }
 
   // reply
   packet.printf("ACK: %u bytes", packet.length());
+}
+
+void drawDisabled() {
+    Serial.println("Drawing DISABLED pattern");
+}
+
+void drawIdle() {
+    Serial.println("Drawing IDLE pattern");
+}
+
+void drawDriving() {
+    Serial.println("Drawing DRIVING pattern");
+}
+
+void drawIntaking() {
+    Serial.println("Drawing INTAKING pattern");
+}
+
+void drawShooting() {
+    Serial.println("Drawing SHOOTING pattern");
+}
+
+void drawClimbing() {
+    Serial.println("Drawing CLIMBING pattern");
 }
 
 void setupLEDs() {
@@ -286,8 +218,8 @@ void setupLEDs() {
     for(;;);
   }
 
-  // start with OFF
-  drawOff();
+  // start with DISABLED
+  drawDisabled();
 }
 
 void setup() {
@@ -297,25 +229,13 @@ void setup() {
 }
 
 void loop() {
-  unsigned long now = millis();
-  if(now - lastUpdate < frameDelayMs) return;
-  lastUpdate = now;
-
   // Choose what to draw based on currentPattern
   switch(currentPattern) {
-    case P_OFF: drawOff(); break;
-    case P_SOLID: drawSolid(); break;
-    case P_CHECKER: drawChecker(); break;
-    case P_RAINBOW: drawRainbow(); break;
-    case P_TEXT: drawText(); break;
-    default: drawOff(); break;
-  }
-
-  // Optionally debug frame count occasionally
-  static unsigned long lastFps = 0;
-  if(now - lastFps > 1000) {
-    Serial.print("Frame count: ");
-    Serial.println(matrix.getFrameCount());
-    lastFps = now;
+    case P_DISABLED: drawDisabled(); break;
+    case P_IDLE: drawIdle(); break;
+    case P_DRIVING: drawDriving(); break;
+    case P_INTAKING: drawIntaking(); break;
+    case P_SHOOTING: drawShooting(); break;
+    case P_CLIMBING: drawClimbing(); break;
   }
 }
