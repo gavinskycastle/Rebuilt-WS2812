@@ -53,6 +53,8 @@ byte mac[][NUMBER_OF_MAC] =
   { 0xDE, 0xAD, 0xBE, 0xEF, 0xBE, 0x14 },
 };
 
+#define PACKET_SIZE 256;
+
 // Select the IP address according to your local network
 IPAddress myIP(10, 42, 1, 12);
 IPAddress myGW(10, 42, 1, 1);
@@ -69,7 +71,7 @@ unsigned int localPort    = 25000;             // local port to listen for UDP p
 
 const int UDP_TIMEOUT     = 2000;     // timeout in milliseconds to wait for an UDP packet to arrive
 
-byte packetBuffer[NTP_PACKET_SIZE];          // buffer to hold incoming packet
+byte packetBuffer[PACKET_SIZE];          // buffer to hold incoming packet
 byte ReplyBuffer[] = "ACK";      // a string to send back
 
 // A UDP instance to let us send and receive packets over UDP
@@ -87,7 +89,7 @@ enum Pattern { P_DISABLED, P_IDLE, P_DRIVING, P_INTAKING, P_SHOOTING, P_CLIMBING
 volatile Pattern currentPattern = P_DISABLED;
 
 // Updated packet parser: set global pattern & parameters
-void parsePacket(AsyncUDPPacket packet)
+void parsePacket(String msg)
 {
   // Simple command parsing (case-insensitive)
   msg.toLowerCase();
@@ -236,7 +238,7 @@ void loop() {
     Serial.println(Udp.remotePort());
 
     // We've received a packet, read the data from it into the buffer
-    Udp.read(packetBuffer, NTP_PACKET_SIZE);
+    Udp.read(packetBuffer, PACKET_SIZE);
     // Optionally send an ACK back to the sender (useful for testing)
     // This replies to the actual sender's IP/port so it will work whether
     // the packet originated from 10.42.1.2:25000 or another source.
