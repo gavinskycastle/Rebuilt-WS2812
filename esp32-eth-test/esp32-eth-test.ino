@@ -60,7 +60,7 @@ const int UDP_TIMEOUT = 2000;     // timeout in milliseconds to wait for an UDP 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 // Static IP Configuration
-IPAddress ip(10, 42, 1, 12);         // Static IP address
+IPAddress ip(10, 42, 1, 13);         // Static IP address
 IPAddress dns(8, 8, 8, 8);          // DNS server
 IPAddress gateway(10, 42, 1, 1);      // Gateway address
 IPAddress subnet(255, 255, 255, 0);     // Subnet mask
@@ -113,8 +113,12 @@ void loop() {
 
     // We've received a packet, read the data from it into the buffer
     udp.read(packetBuffer, PACKET_SIZE);
-  }
 
-  String msg = String((char*)packetBuffer).substring(0, packetSize);
-  Serial.println(msg); // Read the message back to us
+    String msg = String((char*)packetBuffer).substring(0, packetSize);
+    Serial.println(msg); // Read the message back to us
+  } else {
+    Serial.print("Failed to recieve a packet after ");
+    Serial.print(UDP_TIMEOUT);
+    Serial.println("ms");
+  }
 }
