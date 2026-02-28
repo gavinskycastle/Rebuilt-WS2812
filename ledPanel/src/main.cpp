@@ -33,17 +33,11 @@
 //MatrixPanel_I2S_DMA dma_display;
 MatrixPanel_I2S_DMA *dma_display = nullptr;
 
-uint16_t myBLACK = dma_display->color565(0, 0, 0);
-uint16_t myWHITE = dma_display->color565(255, 255, 255);
-uint16_t myRED = dma_display->color565(255, 0, 0);
-uint16_t myGREEN = dma_display->color565(0, 255, 0);
-uint16_t myBLUE = dma_display->color565(0, 0, 255);
+uint16_t white = dma_display->color565(255, 255, 255);
 
 AnimatedGIF gif;
 File f;
 int x_offset, y_offset;
-
-
 
 // Draw a line of image directly on the LED Matrix
 void GIFDraw(GIFDRAW *pDraw)
@@ -228,7 +222,7 @@ void setup() {
   dma_display->begin();
   dma_display->setBrightness8(128); //0-255
   dma_display->clearScreen();
-  dma_display->fillScreen(myWHITE);
+  dma_display->fillScreen(white);
 
   // Start going through GIFS  
   gif.begin(LITTLE_ENDIAN_PIXELS);
